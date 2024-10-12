@@ -122,17 +122,21 @@ interface Ethernet0/0
 interface Ethernet0/0.10
  encapsulation dot1Q 10
  ip address 192.168.10.1 255.255.255.0
+ descryption Managment
          
 interface Ethernet0/0.20
  encapsulation dot1Q 20
  ip address 192.168.20.1 255.255.255.0
+ descryption Sales
         
 interface Ethernet0/0.30
  encapsulation dot1Q 30
  ip address 192.168.30.1 255.255.255.0
+ descryption Operations
      
 interface Ethernet0/0.1000
- encapsulation dot1Q 1000
+ encapsulation dot1Q 1000 native
+ descryption native
 ```
 ## Part 4
 ### Проверка сетевой связанности
