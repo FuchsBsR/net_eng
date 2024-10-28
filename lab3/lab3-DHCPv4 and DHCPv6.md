@@ -149,3 +149,78 @@ ip dhcp pool R2-Client-LAN
 #### Проверка работы DHCP на PC-A и PC-B
 ![Проверка работы на ПК-В](image-3.png)
 ![Проверка работы на ПК-А](image-4.png)
+
+
+## DHCPv6
+### Топологию и базовые настройки оставляем прежними
+#### Назначаем IP адреса на R1 и R2
+```
+interface GigabitEthernet0/0
+ ipv6 address FE80::1 link-local
+ ipv6 address 2001:DB8:ACAD:2::1/64
+ no shutdown
+!
+interface GigabitEthernet0/1
+ ipv6 address FE80::1 link-local
+ ipv6 address 2001:DB8:ACAD:1::1/64
+ no shutdown
+```
+#### Добавление маршрутизации
+##### R1
+```
+ipv6 unicast-routing
+ipv6 route 2001:db8:acad:3::/64 2001:db8:acad:2::2
+```
+##### R2
+``` 
+ipv6 unicast-routing
+ipv6 route 2001:db8:acad:1::/64 2001:db8:acad:2::1 
+```
+
+#### Убеждаемся в наличии IP связанности
+![IP связанность](image-5.png)
+
+#### Настройка stateless DHCPv6
+```
+ipv6 dhcp pool R1-STATELESS
+ dns-server 2001:DB8:ACAD::254
+ domain-name STATELESS.com
+```
+#### Настрока на интерфейсе
+```
+interface GigabitEthernet0/1
+ ipv6 address FE80::1 link-local
+ ipv6 address 2001:DB8:ACAD:1::1/64
+ ipv6 nd other-config-flag
+ ipv6 dhcp server R1-STATELESS
+```
+#### Проверка работы на PC-A
+![Проверка на PC-A](image-6.png)
+
+#### Настройка второго пула Statefull DHCPv6 на R1 и relay на R2
+```
+ipv6 dhcp pool R2-STATEFULL
+ address prefix 2001:db8:acad:3:aaa::/80 lifetime 172800 86400
+ dns-server 2001:DB:8:ACAD::254
+ domain-name STATEFULL.com
+```
+#### Настрока на интерфейсе R1
+```
+interface GigabitEthernet0/0
+ ipv6 address FE80::1 link-local
+ ipv6 address 2001:DB8:ACAD:1::1/64
+ ipv6 dhcp server R2-STATEFULL
+```
+#### Настрока на интерфейсе R2
+
+```
+interface GigabitEthernet0/1
+ ipv6 address FE80::1 link-local
+ ipv6 address 2001:DB8:ACAD:3::1/64
+ ipv6 nd managed-config-flag
+ ipv6 enable
+ ipv6 dhcp relay destination 2001:db8:acad:2::1 g0/0/0
+!
+```
+#### Проверка на PC-B
+![Проверка на PC-B](image-7.png)
